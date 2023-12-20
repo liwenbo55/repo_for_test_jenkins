@@ -1,58 +1,36 @@
+// Jenkinsfile by Lawrence
 pipeline {
-    agent { label 'jenkins_slave' }
-    parameters {
-        string(name: 'AWS_CREDENTIAL_ID', defaultValue: 'markwang access', description: 'The ID of the AWS credentials to use')
-        string(name: 'S3_BUCKET', defaultValue: 'techscrumbucket', description: 'The name of the S3 bucket to deploy to')
-        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'The Git branch to build and deploy')
-    }
-
-    environment {
-        AWS_DEFAULT_REGION = 'ap-southeast-2'
-    }
+    agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    // Checkout the specified branch
-                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_BRANCH]], userRemoteConfigs: [[url: 'https://github.com/TechScrumTeamBeta/DevOps-Techscrum.fe']]])
-                }
+        stage('Git checkout') {
+            steps{
+                // Get source code from a GitHub repository
+                git branch:'main', url:'https://github.com/liwenbo55/p3_Techscrum.fe.git'
             }
         }
-
-        stage('Build') {
-            steps {
-                // Install dependencies and build the application
+        
+        stage('ci'){
+            steps{
+                sh 'npm cache clean --force'
+                sh 'npm -v'
+                sh 'node -v'
                 sh 'npm install --force'
-                sh 'cp .env.example .env '
+                sh 'cp .env.example .env'
                 sh 'npm run build'
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to AWS'){
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',   
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', 
-                        credentialsId: params.AWS_CREDENTIAL_ID]
-                    ]) {
-                    script {
-                        // Assuming your build artifacts are in the 'build/' directory
-                        sh "aws s3 sync build/ s3://${params.S3_BUCKET}/"
-                    }
-                }
+                  withAWS(region:'ap-southeast-2',credentials:'lawrence-jenkins-credential') {
+                  sh 'echo "Uploading artifacts with AWS creds"'
+                    //   s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'app.py', bucket:'jenkins-s3-bucket-wach')
+                      s3Upload(file:'./build', bucket:'p3.techscrum-uat.wenboli.xyz-frontend-uat')
+                  }
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Deployment successful!'
-            slackSend (color: '#00FF00', message: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-        }
-        failure {
-            echo 'Deployment failed!'
-            slackSend (color: '#FF0000', message: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-        }
+
     }
 }
