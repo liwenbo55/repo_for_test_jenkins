@@ -12,12 +12,9 @@ pipeline {
         
         stage('ci'){
             steps{
-                // sh 'npm cache clean --force'
                 // sh 'node -v'
-                // sh 'npm -v'
-                // sh 'npm install --force'
-                // sh 'cp .env.example .env'
-                // sh 'npm run build'
+                // sh 'yarn -v'
+                sh 'cp .env.example .env'
                 sh 'yarn --force'
                 sh 'yarn run build'
             }
@@ -28,7 +25,6 @@ pipeline {
                   withAWS(region:'ap-southeast-2',credentials:'lawrence-jenkins-credential') {
                       sh 'echo "Uploading artifacts with AWS creds"'
                       sh 'aws s3 sync ./build s3://p3.techscrum-uat.wenboli.xyz-frontend-uat'
-                    //   s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'app.py', bucket:'jenkins-s3-bucket-wach')
                       // s3Upload(file:'./build', bucket:'p3.techscrum-uat.wenboli.xyz-frontend-uat')
                   }
             }
