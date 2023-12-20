@@ -12,13 +12,14 @@ pipeline {
         
         stage('ci'){
             steps{
-                sh 'npm cache clean --force'
-                sh 'node -v'
-                sh 'npm -v'
-
-                sh 'npm install --force'
-                sh 'cp .env.example .env'
-                sh 'npm run build'
+                // sh 'npm cache clean --force'
+                // sh 'node -v'
+                // sh 'npm -v'
+                // sh 'npm install --force'
+                // sh 'cp .env.example .env'
+                // sh 'npm run build'
+                sh 'yarn --force'
+                sh 'yarn run build'
             }
         }
 
