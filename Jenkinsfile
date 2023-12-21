@@ -12,6 +12,9 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
+            }
+        }
+    }
         
     post {
         success {
@@ -32,5 +35,5 @@ pipeline {
             )
         }
     }
-    }
+    
 }
