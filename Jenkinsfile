@@ -3,6 +3,12 @@ pipeline {
     agent any
 
     stages {
+        stage('Git checkout') {
+            steps{
+                // Get source code from a GitHub repository
+                git branch:'main', url:'https://github.com/liwenbo55/p3_Techscrum.fe.git'
+            }
+        }
         stage('Test') {
             steps {
                 echo 'Testing..'
